@@ -4,7 +4,7 @@ import { useT } from '../i18n.js';
 import Badge from '../components/Badge.jsx';
 import * as att from '../../api/attendance';
 import * as qrApi from '../lib/qrAttendance.js';
-import { AdminQrPanel, StaffQrPanel } from './QrAttendance.jsx';
+import { ReceptionQr, StaffQrPanel } from './QrAttendance.jsx';
 
 const tabsAdmin = ['Live board', 'Reception QR', 'Calendar', 'Punch log', 'Corrections', 'Disputes'];
 const tabsStaff = ['QR Punch', 'My calendar', 'Request correction'];
@@ -82,7 +82,7 @@ export default function Attendance({ user, qrToken }) {
         ))}
       </div>
 
-      {tab === 'Reception QR' && isAdmin && <AdminQrPanel staff={staff || []} />}
+      {tab === 'Reception QR' && isAdmin && <ReceptionQr />}
       {tab === 'QR Punch' && !isAdmin && (myId
         ? <StaffQrPanel staffId={myId} staffName={(staff || []).find((x) => x.id === myId)?.name || user.name} onPunched={refresh} autoToken={qrToken} />
         : <div className="card"><p className="muted">{t('Your login is not linked to a staff record.')}</p></div>)}

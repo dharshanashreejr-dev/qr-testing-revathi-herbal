@@ -22,15 +22,36 @@ function QrCanvas({ text, size = 280 }) {
   return <canvas ref={ref} style={{ width: size, maxWidth: '100%', borderRadius: 12, border: '1px solid var(--line)' }} />;
 }
 
-export function AdminQrPanel({ staff }) {
+function useQrState() {
+  const [S, setS] = useState(null);
+  const refresh = async () => { try { setS(await qr.getState()); } catch { /* shown by the QR card */ } };
+  useEffect(() => { refresh(); const id = setInterval(refresh, 3000); return () => clearInterval(id); }, []);
+  return [S, refresh];
+}
+
+function PendingList({ S, refresh }) {
+  const { t } = useT();
+  const act = (fn) => async () => { await fn(); refresh(); };
+  return S?.requests?.length ? S.requests.map((r) => (
+    <div key={r.rid} className={`alert ${r.kind.startsWith('NEW') ? 'alert-error' : ''}`} style={{ display: 'block', marginBottom: 10 }}>
+      <strong>{r.staffName} ({r.staffId})</strong> · {r.kind}
+      <div className="muted">{new Date(r.at).toLocaleTimeString()}</div>
+      <div>{t('OTP for staff')}: <strong style={{ fontSize: 20, letterSpacing: 3 }}>{r.otp}</strong></div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <button className="btn btn-primary" onClick={act(() => qr.approve(r.rid))}>{t('Approve phone')}</button>
+        <button className="btn btn-light" onClick={act(() => qr.reject(r.rid))}>{t('Reject')}</button>
+      </div>
+    </div>
+  )) : <p className="muted">{t('No pending requests')}</p>;
+}
+
+/* ADMIN > Attendance > Reception QR: the QR (reception screen) + quick phone approvals */
+export function ReceptionQr() {
   const { t } = useT();
   const [code, setCode] = useState(null);
   const [left, setLeft] = useState(1);
-  const [S, setS] = useState(null);
   const [err, setErr] = useState('');
-  const [ips, setIps] = useState('');
-  const [wifi, setWifi] = useState('false');
-  const editing = useRef(false);
+  const [S, refresh] = useQrState();
   const endAt = useRef(0);
 
   const loadQr = async () => {
@@ -47,13 +68,6 @@ export function AdminQrPanel({ staff }) {
     }, 250);
     return () => clearInterval(id);
   }, [code]);
-  const refresh = async () => {
-    try { const s = await qr.getState(); setS(s); if (!editing.current) { setIps(s.settings.allowedIps.join(', ')); setWifi(String(s.settings.wifiCheck)); } } catch { /* shown via QR error */ }
-  };
-  useEffect(() => { refresh(); const id = setInterval(refresh, 3000); return () => clearInterval(id); }, []);
-
-  const act = (fn) => async () => { await fn(); refresh(); };
-  const nameOf = (id) => staff.find((s) => s.id === id)?.name || id;
 
   return (
     <>
@@ -66,24 +80,39 @@ export function AdminQrPanel({ staff }) {
             <div style={{ height: '100%', width: `${left * 100}%`, background: 'var(--rose-deep)', transition: 'width .25s linear' }} />
           </div>
           <p className="muted">{t('Changes every 20 seconds')} · {t('Token')}: <strong>{code?.token}</strong></p>
+          <p className="muted">{t('Staff scan this with their registered phone. Opening it here on the admin login does not punch.')}</p>
         </div>
-
         <div className="card">
           <div className="card-head"><h3><Smartphone size={18} style={{ verticalAlign: -3 }} /> {t('Phone approvals')}</h3></div>
-          {S?.requests?.length ? S.requests.map((r) => (
-            <div key={r.rid} className={`alert ${r.kind.startsWith('NEW') ? 'alert-error' : ''}`} style={{ display: 'block', marginBottom: 10 }}>
-              <strong>{r.staffName} ({r.staffId})</strong> · {r.kind}
-              <div className="muted">{new Date(r.at).toLocaleTimeString()}</div>
-              <div>{t('OTP for staff')}: <strong style={{ fontSize: 20, letterSpacing: 3 }}>{r.otp}</strong></div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button className="btn btn-primary" onClick={act(() => qr.approve(r.rid))}>{t('Approve phone')}</button>
-                <button className="btn btn-light" onClick={act(() => qr.reject(r.rid))}>{t('Reject')}</button>
-              </div>
-            </div>
-          )) : <p className="muted">{t('No pending requests')}</p>}
+          <PendingList S={S} refresh={refresh} />
+          <p className="muted" style={{ marginTop: 10 }}>{t('All phones, alerts and WiFi check: Staff Phones page.')}</p>
+        </div>
+      </div>
+    </>
+  );
+}
 
-          <h4 style={{ marginTop: 18 }}><ShieldAlert size={16} style={{ verticalAlign: -3 }} /> {t('Security alerts')}</h4>
-          {S?.alerts?.length ? S.alerts.slice(0, 6).map((a, i) => (
+/* ADMIN > Staff Phones page: approvals, registered phones + fingerprint status, alerts, salon WiFi check */
+export function PhonesPanel({ staff }) {
+  const { t } = useT();
+  const [S, refresh] = useQrState();
+  const [ips, setIps] = useState('');
+  const [wifi, setWifi] = useState('false');
+  const editing = useRef(false);
+  useEffect(() => { if (S && !editing.current) { setIps(S.settings.allowedIps.join(', ')); setWifi(String(S.settings.wifiCheck)); } }, [S]);
+  const act = (fn) => async () => { await fn(); refresh(); };
+  const nameOf = (id) => staff.find((s) => s.id === id)?.name || id;
+
+  return (
+    <>
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-head"><h3><Smartphone size={18} style={{ verticalAlign: -3 }} /> {t('Phone approvals')}</h3></div>
+          <PendingList S={S} refresh={refresh} />
+        </div>
+        <div className="card">
+          <div className="card-head"><h3><ShieldAlert size={18} style={{ verticalAlign: -3 }} /> {t('Security alerts')}</h3></div>
+          {S?.alerts?.length ? S.alerts.slice(0, 8).map((a, i) => (
             <div key={i} className="alert alert-error" style={{ display: 'block', marginBottom: 6 }}>{a.msg}<div className="muted">{new Date(a.at).toLocaleString()}</div></div>
           )) : <p className="muted">{t('No alerts')}</p>}
         </div>
@@ -120,7 +149,7 @@ export function AdminQrPanel({ staff }) {
             <button className="btn btn-light" onClick={() => { editing.current = true; const v = ips.split(',').map((x) => x.trim()).filter(Boolean); if (S?.yourIp && !v.includes(S.yourIp)) v.push(S.yourIp); setIps(v.join(', ')); }}>{t('Add my IP')} ({S?.yourIp || '?'})</button>
             <button className="btn btn-primary" onClick={async () => { await qr.saveSettings({ wifiCheck: wifi === 'true', allowedIps: ips.split(',') }); editing.current = false; refresh(); }}>{t('Save')}</button>
           </div>
-          <p className="muted" style={{ marginTop: 14 }}>{t('Limit: the phone fingerprint proves a live unlock on the registered phone, not whose finger it is. Identity = staff ID + approved phone. Full finger identity needs the machine (Phase 2).')}</p>
+          <p className="muted" style={{ marginTop: 14 }}>{t('Limit: the phone fingerprint proves a live unlock on the registered phone, not whose finger it is. Identity = staff ID + approved phone.')}</p>
         </div>
       </div>
     </>

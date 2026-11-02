@@ -9,6 +9,7 @@ New:
 - src/admin/lib/qrAttendance.js      (client calls, WebAuthn fingerprint, punch sync)
 - server/app.js, server/store.js, server/index.js, api/index.js, vercel.json (API: QR tokens, phone approval, OTP, WebAuthn, punches; Upstash Redis on Vercel, data.json locally)
 Changed:
+- src/admin/pages/Devices.jsx        (now "Staff Phones": phone approvals, fingerprint status, alerts, WiFi check; old fake biometric list removed)
 - src/admin/pages/Attendance.jsx     (admin tab "Reception QR", staff tab "QR Punch", 3 s live sync)
 - src/api/attendance.ts              (mergePunches, source 'QR', fake seed punches switched off)
 - src/admin/lib/qrScan.js            (jsQR now bundled from npm, no CDN)
