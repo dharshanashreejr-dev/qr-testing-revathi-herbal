@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Order details — Revathi Herbal Care</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f9f7ff;color:#1c1032;padding:16px}
+.wrap{max-width:480px;margin:0 auto}
+.head{background:#1c1032;color:#efecfe;text-align:center;padding:18px 12px;border-radius:14px 14px 0 0}
+.head b{display:block;font-family:Georgia,serif;letter-spacing:.12em;font-size:18px}
+.head i{font-size:12px;opacity:.85}
+.card{background:#fff;padding:16px;border-radius:0 0 14px 14px;box-shadow:0 4px 16px #0001}
+.id{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.id h1{font-size:18px;margin:0}
+.badge{font-size:12px;padding:5px 10px;border-radius:999px;background:#dad2fe;color:#290f5a;font-weight:700;white-space:nowrap}
+.badge.x{background:#fde2e2;color:#a31d1d}
+.row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}
+.row span:first-child{color:#777;flex:0 0 38%}
+.row span:last-child{text-align:right;word-break:break-word}
+h2{font-size:14px;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.06em;color:#555}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{position:relative;padding:6px 0 6px 28px;font-size:14px;color:#999}
+.steps li:before{content:"";position:absolute;left:4px;top:10px;width:12px;height:12px;border-radius:50%;background:#ddd}
+.steps li.on{color:#1c1032;font-weight:700}
+.steps li.on:before{background:#471b8d}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:8px 4px;text-align:left;border-bottom:1px solid #eee}
+th{color:#777;font-weight:400;font-size:12px}
+td:last-child,th:last-child{text-align:right}
+.total{display:flex;justify-content:space-between;font-size:17px;font-weight:700;padding-top:12px}
+.err{text-align:center;padding:30px 10px;color:#a31d1d}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><img src="/revathi-logo.svg" alt="" style="width:76px;height:76px;border-radius:50%;display:block;margin:0 auto 8px"><b>REVATHI HERBAL CARE</b><i>Where Nature meets beauty</i></div>
+  <div class="card" id="out"><div class="err" style="color:#777">Loading…</div></div>
+</div>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function rs(n) { return '\u20B9' + Number(n || 0).toLocaleString('en-IN'); }
+  try {
+    var m = location.hash.match(/d=([A-Za-z0-9_-]+)/);
+    if (!m) throw new Error('no data');
+    var b = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (b.length % 4) b += '=';
+    var d = JSON.parse(decodeURIComponent(escape(atob(b))));
+    var STAGES = ['Order placed', 'Order confirmed', 'Order packed', 'Order shipped', 'Order delivered'];
+    var cancelled = d.s === -1;
+    var stage = cancelled ? -1 : (d.s || 0);
+    var h = '<div class="id"><h1>' + esc(d.i) + '</h1><span class="badge' + (cancelled ? ' x' : '') + '">' + (cancelled ? 'Cancelled' : STAGES[stage] || '') + '</span></div>';
+    function row(k, v) { return v ? '<div class="row"><span>' + k + '</span><span>' + esc(v) + '</span></div>' : ''; }
+    h += row('Customer', d.c) + row('Phone', d.p) + row('Address', d.a) + row('Order date', d.d) + row('Payment', d.y) + row('Courier', d.k) + row('Tracking no.', d.w);
+    if (!cancelled) {
+      h += '<h2>Order status</h2><ul class="steps">';
+      for (var i = 0; i < STAGES.length; i++) h += '<li' + (i <= stage ? ' class="on"' : '') + '>' + STAGES[i] + '</li>';
+      h += '</ul>';
+    }
+    h += '<h2>Items</h2><table><tr><th>Product</th><th>Qty</th><th>Price</th></tr>';
+    (d.l || []).forEach(function (x) { h += '<tr><td>' + esc(x[0]) + '</td><td>' + esc(x[1]) + '</td><td>' + rs(x[2] * x[1]) + '</td></tr>'; });
+    h += '</table><div class="total"><span>Total</span><span>' + rs(d.t) + '</span></div>';
+    out.innerHTML = h;
+  } catch (e) {
+    out.innerHTML = '<div class="err">This order link is not valid.<br>Please scan the QR code again.</div>';
+  }
+})();
+</script>
+</body>
+</html>

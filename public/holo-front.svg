@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="880" viewBox="0 0 630 880">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#371473"/>
+      <stop offset="0.5" stop-color="#241049"/>
+      <stop offset="1" stop-color="#180b31"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a485fa"/>
+      <stop offset="1" stop-color="#6425c8"/>
+    </linearGradient>
+  </defs>
+  <rect width="630" height="880" fill="#e9e6f6"/>
+  <rect x="26" y="26" width="578" height="828" rx="14" fill="url(#g)"/>
+  <rect x="46" y="46" width="538" height="788" rx="8" fill="none" stroke="url(#gold)" stroke-width="3"/>
+  <g transform="translate(315 330)">
+    <g fill="#c4b5fd">
+      <ellipse rx="40" ry="105" transform="rotate(0)"/>
+      <ellipse rx="40" ry="105" transform="rotate(72)"/>
+      <ellipse rx="40" ry="105" transform="rotate(144)"/>
+      <ellipse rx="40" ry="105" transform="rotate(216)"/>
+      <ellipse rx="40" ry="105" transform="rotate(288)"/>
+    </g>
+    <circle r="46" fill="url(#gold)"/>
+    <circle r="24" fill="#180b31"/>
+  </g>
+  <text x="315" y="560" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="700" fill="#f9f7ff">Maison Bloom</text>
+  <text x="315" y="612" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" letter-spacing="9" fill="url(#gold)">VIP MEMBER</text>
+  <line x1="170" y1="660" x2="460" y2="660" stroke="url(#gold)" stroke-width="2"/>
+  <text x="315" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" letter-spacing="4" fill="#c9bfee">BEAUTY  .  SKIN  .  WELLNESS</text>
+  <text x="315" y="790" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" letter-spacing="3" fill="#a087d9">DEMO CARD ART</text>
+</svg>

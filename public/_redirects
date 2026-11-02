@@ -1,0 +1,9 @@
+# Netlify / Cloudflare Pages: send these pages to the site app
+/services  /site/index.html  200
+/booking  /site/index.html  200
+/success  /site/index.html  200
+/about  /site/index.html  200
+/track  /site/index.html  200
+/account  /site/index.html  200
+/manager  /site/index.html  200
+/reviews  /site/index.html  200
