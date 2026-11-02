@@ -45,6 +45,13 @@ const initialStaff = () => [
   ...USERS.map((u, i) => ({ ...blankStaff, id: `S-${String(team.length + i + 1).padStart(3, '0')}`, name: u.name, email: u.email, role: u.role === 'Admin' ? 'Administrator' : 'Receptionist', permissions: u.role === 'Admin' ? ['all'] : ['appointments', 'customers'] }))
 ];
 
+// A browser that already saved its staff list (older build) may miss the demo login accounts (staff2, staff3...). Add any that are missing.
+const withLoginStaff = (list) => {
+  const have = new Set(list.map((x) => (x.email || '').toLowerCase()).filter(Boolean));
+  const missing = initialStaff().filter((x) => x.email && !have.has(x.email.toLowerCase()) && !list.some((y) => y.id === x.id));
+  return missing.length ? [...list, ...missing] : list;
+};
+
 const sigNow = () => [raw(ORDERS_KEY), raw(KEYS.bookings), raw(KEYS.users)].join('|');
 
 const ADMIN_STATUSES = ['Scheduled', 'Checked-In', 'In Session', 'Completed', 'Rescheduled', 'No-Show'];
@@ -67,7 +74,7 @@ const ago = (ts) => {
 
 export function StoreProvider({ children }) {
   const saved = useMemo(() => load(KEY, null), []);
-  const [staff, setStaff] = useState(saved?.staff || initialStaff());
+  const [staff, setStaff] = useState(withLoginStaff(saved?.staff || initialStaff()));
   const [messages, setMessages] = useState(saved?.messages || []);
   const [auditLog, setAuditLog] = useState(saved?.auditLog || []);
   const [lowStockThreshold, setLowStockThreshold] = useState(saved?.lowStockThreshold ?? 10);
